@@ -1,0 +1,43 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VS Code settings
+.vscode/
+
+# Mac system files
+.DS_Store
+
+# Environment variables / secrets
+.env
+.env.local
+
+# Model files
+models/*.pkl
+models/*.joblib
+
+# Large datasets
+data/raw/*.csv
+data/processed/*.csv
+
+# Generated output files
+outputs/*.csv
+outputs/*.txt
+outputs/*.png
+outputs/*.jpg
+outputs/*.jpeg
+
+# Logs
+*.log
+
+# Streamlit cache
+.streamlit/
