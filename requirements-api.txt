@@ -6,3 +6,6 @@ numpy
 scikit-learn==1.5.1
 xgboost
 pydantic
+pytest
+httpx
+requests
