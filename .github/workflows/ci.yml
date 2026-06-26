@@ -42,4 +42,4 @@ jobs:
           ls data/raw
 
       - name: Run tests
-        run: pytest
+        run: PYTHONPATH=. pytest
