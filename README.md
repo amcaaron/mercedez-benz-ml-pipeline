@@ -2,26 +2,26 @@
 
 ## Project Overview
 
-This project is an end-to-end machine learning pipeline designed to predict the amount of time a Mercedes-Benz vehicle spends on the test bench during manufacturing. The goal is to use manufacturing configuration data to improve testing efficiency, reduce production bottlenecks, and support data-driven optimization.
+This project is an end-to-end machine learning pipeline designed to predict the amount of time a Mercedes-Benz vehicle spends on the test bench during manufacturing. The goal is to use high-dimensional manufacturing configuration data to improve testing efficiency, reduce production bottlenecks, and support data-driven manufacturing optimization.
 
-The project uses a high-dimensional tabular dataset containing anonymized vehicle configuration features. The final model was trained using XGBoost after comparing multiple machine learning models, performing dimensionality reduction experiments, tuning hyperparameters, and adding explainability through SHAP analysis.
-
-This project also includes a Streamlit dashboard for visualizing results and a FastAPI endpoint for serving real-time predictions.
+The project includes model training, model comparison, hyperparameter tuning, PCA experimentation, SHAP explainability, a Streamlit dashboard, a production-ready FastAPI prediction API, Docker support, automated Pytest testing, and GitHub Actions CI/CD.
 
 ---
 
-## Goals
+## Key Features
 
-The main goals of this project were to:
-
-* Build a complete machine learning pipeline from raw CSV data to final predictions
-* Clean and preprocess high-dimensional manufacturing data
-* Compare multiple regression models
-* Tune model hyperparameters for improved performance
-* Evaluate whether PCA dimensionality reduction improves model performance
-* Add model explainability using feature importance and SHAP values
-* Build a Streamlit dashboard to present results
-* Create a FastAPI prediction endpoint to serve the trained model
+* End-to-end machine learning pipeline from raw CSV data to predictions
+* High-dimensional tabular data preprocessing
+* Model comparison across Random Forest, Gradient Boosting, and XGBoost
+* Hyperparameter tuning with `RandomizedSearchCV`
+* PCA vs no-PCA performance comparison
+* SHAP explainability and feature importance visualization
+* Saved full preprocessing and model pipeline using Joblib
+* FastAPI prediction API that accepts raw feature input
+* Streamlit dashboard for visualizing model results
+* Automated unit and API tests with Pytest
+* Dockerized API environment
+* GitHub Actions CI workflow for automated testing
 
 ---
 
@@ -36,25 +36,29 @@ The main goals of this project were to:
 * Scikit-learn
 * XGBoost
 * SHAP
+* Joblib
 
 ### Data Processing
 
 * Pandas
 * NumPy
 
-### Visualization
-
-* Matplotlib
-* Streamlit
-
 ### API Development
 
 * FastAPI
 * Uvicorn
+* Pydantic
 
-### Model Persistence
+### Testing and DevOps
 
-* Joblib
+* Pytest
+* Docker
+* GitHub Actions
+
+### Visualization
+
+* Matplotlib
+* Streamlit
 
 ---
 
@@ -63,7 +67,12 @@ The main goals of this project were to:
 ```text
 MercedezBenzProject/
 │
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+│
 ├── api/
+│   ├── __init__.py
 │   └── app.py
 │
 ├── dashboard/
@@ -71,12 +80,10 @@ MercedezBenzProject/
 │
 ├── data/
 │   └── raw/
-│       ├── train.csv
-│       └── test.csv
+│       └── train.csv
 │
 ├── models/
-│   ├── xgboost_model.pkl
-│   └── feature_columns.pkl
+│   └── mercedes_pipeline.joblib
 │
 ├── outputs/
 │   ├── predictions.csv
@@ -93,6 +100,7 @@ MercedezBenzProject/
 │   ├── preprocessing.py
 │   ├── dimensionality_reduction.py
 │   ├── train.py
+│   ├── train_pipeline.py
 │   ├── evaluate.py
 │   ├── predict.py
 │   ├── model_comparison.py
@@ -100,41 +108,48 @@ MercedezBenzProject/
 │   ├── shap_analysis.py
 │   └── tune_model.py
 │
+├── tests/
+│   ├── __init__.py
+│   ├── test_api.py
+│   └── test_pipeline.py
+│
+├── Dockerfile
+├── .dockerignore
+├── .gitignore
 ├── main.py
-├── run_tuning.py
+├── run_no_pca.py
 ├── run_pca_comparison.py
-├── test_api_request.py
+├── run_tuning.py
+├── manual_api_request.py
+├── manual_pipeline_api.py
 ├── requirements.txt
-├── README.md
-└── .gitignore
+├── requirements-api.txt
+└── README.md
 ```
 
 ---
 
 ## Dataset
 
-The project uses two CSV files:
+The project uses the Mercedes-Benz Greener Manufacturing dataset.
+
+The main training file is stored at:
 
 ```text
 data/raw/train.csv
-data/raw/test.csv
 ```
 
-The training dataset contains the target column:
+The target column is:
 
 ```text
 y
 ```
 
-The target variable represents the vehicle testing time. The remaining columns represent anonymized Mercedes-Benz manufacturing configuration features.
-
-The test dataset contains the same feature structure but does not include the target column. The trained model is used to generate predictions for this test dataset.
+The target variable represents the amount of time a vehicle spends on the test bench. The remaining columns represent anonymized vehicle configuration features.
 
 ---
 
 ## Machine Learning Workflow
-
-The project follows this machine learning workflow:
 
 ```text
 Load Data
@@ -157,13 +172,19 @@ Tune XGBoost
 ↓
 Evaluate PCA vs No PCA
 ↓
-Train Final Model
+Train Final XGBoost Model
+↓
+Save Full Preprocessing + Model Pipeline
 ↓
 Generate Predictions
 ↓
-Save Model and Outputs
+Build Dashboard
 ↓
-Build Dashboard and API
+Serve Model with FastAPI
+↓
+Test with Pytest
+↓
+Validate with GitHub Actions CI
 ```
 
 ---
@@ -172,23 +193,19 @@ Build Dashboard and API
 
 The preprocessing phase includes:
 
-* Loading `train.csv` and `test.csv`
+* Loading the raw training CSV file
 * Separating the target variable `y`
-* Dropping the `ID` column from training features
-* Saving test IDs for prediction output
-* Label encoding categorical variables
+* Dropping the `ID` column
+* Handling categorical manufacturing features
 * Removing zero-variance columns
-* Aligning train and test feature columns
+* Preparing data for model training
+* Saving a complete preprocessing and model pipeline for API inference
 
-Zero-variance columns were removed because they provide no useful information to the model.
-
-Categorical features were label encoded so that machine learning models could process them numerically.
+The final production pipeline uses Scikit-learn’s `Pipeline` and `ColumnTransformer` so the FastAPI app can accept raw feature input instead of requiring manually preprocessed data.
 
 ---
 
 ## Models Compared
-
-The project compares the following regression models:
 
 | Model                       | Description                     |
 | --------------------------- | ------------------------------- |
@@ -241,7 +258,7 @@ The tuning process improved the model compared to the baseline XGBoost model.
 
 ## PCA vs No PCA Experiment
 
-A key experiment in this project was testing whether PCA dimensionality reduction improved model performance.
+A key experiment in this project was testing whether PCA dimensionality reduction improved performance.
 
 Two pipelines were compared:
 
@@ -260,8 +277,6 @@ Preprocessed Data → XGBoost
 | XGBoost + PCA       |    0.547 | 8.394 | 5.738 |
 | XGBoost Without PCA |    0.602 | 7.871 | 5.242 |
 
-The no-PCA pipeline performed better across all major evaluation metrics.
-
 ### Conclusion
 
 XGBoost performed better without PCA. This suggests that PCA removed useful information from the original manufacturing configuration features.
@@ -272,7 +287,7 @@ Since tree-based models such as XGBoost can naturally handle high-dimensional fe
 
 ## Model Explainability
 
-This project includes two forms of model explainability:
+This project includes two forms of model explainability.
 
 ### Feature Importance
 
@@ -286,7 +301,7 @@ outputs/feature_importance.png
 
 ### SHAP Explainability
 
-SHAP was used to explain how individual features influenced the model predictions.
+SHAP was used to explain how individual features influenced model predictions.
 
 Output file:
 
@@ -294,13 +309,120 @@ Output file:
 outputs/shap_summary.png
 ```
 
-SHAP adds interpretability by showing both the direction and magnitude of each feature's impact on predictions.
+SHAP adds interpretability by showing both the direction and magnitude of each feature’s impact on predictions.
+
+---
+
+## Saved Production Pipeline
+
+The final production pipeline is saved as:
+
+```text
+models/mercedes_pipeline.joblib
+```
+
+This file contains both:
+
+* Preprocessing logic
+* Tuned XGBoost model
+
+This allows the FastAPI app to accept raw feature values and run the same preprocessing steps used during training before generating a prediction.
+
+To retrain and save the production pipeline, run:
+
+```bash
+python src/train_pipeline.py
+```
+
+---
+
+## FastAPI Prediction API
+
+The project includes a FastAPI backend that serves the saved machine learning pipeline.
+
+### API Endpoints
+
+| Endpoint    | Method | Description                                   |
+| ----------- | ------ | --------------------------------------------- |
+| `/`         | GET    | Confirms the API is running                   |
+| `/health`   | GET    | Checks API health and pipeline loading status |
+| `/features` | GET    | Returns the required raw feature columns      |
+| `/predict`  | POST   | Returns a predicted vehicle test bench time   |
+
+### Run the API Locally
+
+From the project root folder, run:
+
+```bash
+python -m uvicorn api.app:app --reload
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+The `/docs` page provides an interactive Swagger UI for testing the API.
+
+### Example API Request
+
+```json
+{
+  "features": {
+    "X0": "k",
+    "X1": "v",
+    "X2": "at"
+  }
+}
+```
+
+The full required feature list can be viewed by visiting:
+
+```text
+http://127.0.0.1:8000/features
+```
+
+---
+
+## Manual API Testing
+
+The project includes manual API scripts for local testing:
+
+```text
+manual_api_request.py
+manual_pipeline_api.py
+```
+
+These scripts are not part of the automated Pytest suite. They are used for manually sending requests to the running FastAPI server.
+
+To run a manual API test:
+
+1. Start the API:
+
+```bash
+python -m uvicorn api.app:app --reload
+```
+
+2. Open a second terminal and run:
+
+```bash
+python manual_pipeline_api.py
+```
+
+Expected response:
+
+```text
+Status Code: 200
+Response:
+{"predicted_test_time": ...}
+```
 
 ---
 
 ## Streamlit Dashboard
 
-The project includes a Streamlit dashboard for presenting the model results visually.
+The project includes a Streamlit dashboard for presenting model results visually.
 
 The dashboard displays:
 
@@ -323,73 +445,82 @@ Then open the local Streamlit URL shown in the terminal.
 
 ---
 
-## FastAPI Prediction API
+## Automated Testing
 
-The project includes a FastAPI backend that serves the trained model through a prediction endpoint.
+The project includes automated tests with Pytest.
 
-### API Features
+Test files are located in:
 
-| Endpoint        | Description                                |
-| --------------- | ------------------------------------------ |
-| `GET /`         | Confirms the API is running                |
-| `GET /health`   | Checks API health and model loading status |
-| `GET /features` | Returns the required feature columns       |
-| `POST /predict` | Returns a predicted vehicle test time      |
+```text
+tests/
+```
 
-### Run the API
+Current tests validate:
 
-From the project root folder, run:
+* Saved pipeline file exists
+* Training data exists
+* Pipeline can generate predictions
+* FastAPI root endpoint works
+* FastAPI health endpoint works
+* FastAPI feature endpoint works
+* API handles missing features correctly
+
+### Run Tests Locally
 
 ```bash
-python -m uvicorn api.app:app --reload
+PYTHONPATH=. python -m pytest
+```
+
+Expected result:
+
+```text
+7 passed
+```
+
+---
+
+## GitHub Actions CI/CD
+
+This project uses GitHub Actions to automatically run tests when code is pushed to the repository.
+
+Workflow file:
+
+```text
+.github/workflows/ci.yml
+```
+
+The CI workflow:
+
+* Checks out the repository
+* Sets up Python
+* Installs dependencies
+* Verifies required project files
+* Runs the Pytest test suite
+
+This helps ensure the machine learning pipeline and API remain stable after future changes.
+
+---
+
+## Docker Support
+
+The FastAPI app can be run inside a Docker container.
+
+### Build the Docker Image
+
+```bash
+docker build -t mercedes-ml-api .
+```
+
+### Run the Docker Container
+
+```bash
+docker run -p 8000:8000 mercedes-ml-api
 ```
 
 Then open:
 
 ```text
 http://127.0.0.1:8000/docs
-```
-
-The `/docs` page provides an interactive Swagger UI for testing the API.
-
----
-
-## API Testing
-
-The project includes a test script:
-
-```text
-test_api_request.py
-```
-
-This script:
-
-* Loads the dataset
-* Preprocesses the test data
-* Selects one sample row
-* Sends it to the FastAPI `/predict` endpoint
-* Prints the predicted test time
-
-### Run API Test
-
-First, make sure the API is running:
-
-```bash
-python -m uvicorn api.app:app --reload
-```
-
-Then open a second terminal and run:
-
-```bash
-python test_api_request.py
-```
-
-Expected response:
-
-```text
-Status Code: 200
-Response:
-{'predicted_test_time': ...}
 ```
 
 ---
@@ -399,13 +530,11 @@ Response:
 ### 1. Clone the Repository
 
 ```bash
-git clone <your-repository-url>
-cd MercedezBenzProject
+git clone https://github.com/amcaaron/mercedez-benz-ml-pipeline.git
+cd mercedez-benz-ml-pipeline
 ```
 
 ### 2. Create a Virtual Environment
-
-Optional but recommended:
 
 ```bash
 python -m venv venv
@@ -427,33 +556,29 @@ venv\Scripts\activate
 
 ### 3. Install Dependencies
 
+For the full project:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Add Dataset Files
+For the FastAPI/Docker/testing environment:
 
-Place the dataset files in:
-
-```text
-data/raw/train.csv
-data/raw/test.csv
+```bash
+pip install -r requirements-api.txt
 ```
 
-### 5. Run the Main Pipeline
+### 4. Run the Main ML Pipeline
 
 ```bash
 python main.py
 ```
 
-This will:
+### 5. Train the Production Pipeline
 
-* Train the final model
-* Evaluate model performance
-* Save model files
-* Generate predictions
-* Generate feature importance
-* Generate SHAP explainability chart
+```bash
+python src/train_pipeline.py
+```
 
 ### 6. Run Hyperparameter Tuning
 
@@ -467,16 +592,22 @@ python run_tuning.py
 python run_pca_comparison.py
 ```
 
-### 8. Run Streamlit Dashboard
+### 8. Run the FastAPI App
+
+```bash
+python -m uvicorn api.app:app --reload
+```
+
+### 9. Run the Streamlit Dashboard
 
 ```bash
 streamlit run dashboard/app.py
 ```
 
-### 9. Run FastAPI
+### 10. Run Tests
 
 ```bash
-python -m uvicorn api.app:app --reload
+PYTHONPATH=. python -m pytest
 ```
 
 ---
@@ -487,7 +618,7 @@ The project generates the following outputs:
 
 | File                             | Description                                                 |
 | -------------------------------- | ----------------------------------------------------------- |
-| `outputs/predictions.csv`        | Final predictions on test data                              |
+| `outputs/predictions.csv`        | Final predictions                                           |
 | `outputs/model_metrics.txt`      | Final model evaluation results                              |
 | `outputs/model_comparison.csv`   | Comparison of Random Forest, Gradient Boosting, and XGBoost |
 | `outputs/pca_comparison.csv`     | PCA vs no-PCA experiment results                            |
@@ -513,20 +644,9 @@ The final model outperformed the PCA version and the baseline models.
 
 ---
 
-## Key Takeaways
-
-* XGBoost performed best after hyperparameter tuning.
-* PCA reduced performance for this dataset.
-* Tree-based models benefited from retaining the original processed feature space.
-* SHAP and feature importance added interpretability to the final model.
-* Streamlit made the results easier to present visually.
-* FastAPI allowed the trained model to be served through a prediction endpoint.
-
----
-
 ## Business Value
 
-This project demonstrates how machine learning can support manufacturing optimization by predicting vehicle testing time based on configuration data.
+This project demonstrates how machine learning can support manufacturing optimization by predicting vehicle testing time based on vehicle configuration data.
 
 Potential business benefits include:
 
@@ -538,29 +658,35 @@ Potential business benefits include:
 
 ---
 
+## Key Takeaways
+
+* XGBoost performed best after hyperparameter tuning.
+* PCA reduced performance for this dataset.
+* Tree-based models benefited from retaining the original processed feature space.
+* SHAP and feature importance improved interpretability.
+* FastAPI made the model available through a prediction API.
+* Docker improved environment consistency and deployment readiness.
+* Pytest and GitHub Actions added automated validation.
+* The project now demonstrates both machine learning development and production engineering practices.
+
+---
+
 ## Future Improvements
 
 Future improvements could include:
 
-* Saving the full preprocessing pipeline so the API can accept raw input data
-* Adding automated unit tests for preprocessing and prediction logic
 * Deploying the FastAPI backend to a cloud platform
 * Deploying the Streamlit dashboard online
 * Adding MLflow for experiment tracking
 * Testing additional models such as LightGBM or CatBoost
-* Adding Docker support for easier deployment
-* Improving API validation for raw manufacturing configuration inputs
-* Adding CI/CD with GitHub Actions
+* Improving API validation with stricter Pydantic schemas
+* Adding Docker image builds to GitHub Actions
+* Adding monitoring or logging for production API requests
 
 ---
 
-**Mercedes-Benz Manufacturing Optimization ML Pipeline**
-
-Built an end-to-end machine learning pipeline using Python, XGBoost, SHAP, Streamlit, and FastAPI to predict Mercedes-Benz vehicle test bench time from high-dimensional manufacturing configuration data.
-
-
 ## Author
 
-Aaron Cole
+**Aaron Cole**
 Computer Science Graduate
 Interested in Software Engineering, AI Development, Machine Learning, and Quantitative Analysis
