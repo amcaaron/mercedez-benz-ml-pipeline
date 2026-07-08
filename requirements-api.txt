@@ -9,3 +9,5 @@ pydantic
 pytest
 httpx
 requests
+tensorflow
+shap

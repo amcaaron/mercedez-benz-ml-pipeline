@@ -7,3 +7,5 @@ venv/
 .env
 .DS_Store
 notebooks/
+.ipynb_checkpoints/
+outputs/
